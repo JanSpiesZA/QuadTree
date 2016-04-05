@@ -3,9 +3,9 @@ int GridHeight = 100;
 
 int screenWidth = 640;
 int screenHeight = 640;
-int tileSize = 80;
+int tileSize = 160;
 
-int level = 3;
+int level = 2;
 
 int maxHistogramX = int(screenWidth/tileSize);
 int maxHistogramY = int(screenHeight/tileSize);
@@ -377,5 +377,281 @@ void updateWorld()
   for (Node n: allNodes)
   {
    n.display();     
+  }
+}
+
+//Code copied from: https://forum.processing.org/one/topic/rect-line-intersection-problem.html
+
+
+
+
+/**
+ * Determine whether a line intersects with a box. <br>
+ * The box is represented by the top-left and
+ * bottom-right corner coordinates.
+ * @param lx0
+ * @param ly0
+ * @param lx1
+ * @param ly1
+ * @param rx0
+ * @param ry0
+ * @param rx1
+ * @param ry1
+ * @return true if they intersect else false
+ */
+boolean line_box_xyxy(float lx0, float ly0, float lx1, float ly1, float rx0, float ry0, float rx1, float ry1) {
+  int out1, out2;
+  float rectWidth = rx1 - rx0;
+  float rectHeight = ry1 - ry0;
+  if ((out2 = outcode(lx1, ly1, rx0, ry0, rectWidth, rectHeight)) == 0) {
+    return true;
+  }
+  while ( (out1 = outcode (lx0, ly0, rx0, ry0, rectWidth, rectHeight)) != 0) {
+    if ((out1 & out2) != 0) {
+      return false;
+    }
+    if ((out1 & (OUT_LEFT | OUT_RIGHT)) != 0) {
+      float x = rx0;
+      if ((out1 & OUT_RIGHT) != 0) {
+        x += rectWidth;
+      }
+      ly0 = ly0 + (x - lx0) * (ly1 - ly0) / (lx1 - lx0);
+      lx0 = x;
+    } else {
+      float y = ry0;
+      if ((out1 & OUT_BOTTOM) != 0) {
+        y += rectHeight;
+      }
+      lx0 = lx0 + (y - ly0) * (lx1 - lx0) / (ly1 - ly0);
+      ly0 = y;
+    }
+  }
+  return true;
+}
+
+/**
+ * Determine whether a line intersects with a box. <br>
+ * The box is represented by the top-left corner coordinates
+ * and the box width and height.
+ * @param lx0
+ * @param ly0
+ * @param lx1
+ * @param ly1
+ * @param rx0
+ * @param ry0
+ * @param rWidth
+ * @param rHeight
+ * @return true if they intersect else false
+ */
+boolean line_box_xywh(float lx0, float ly0, float lx1, float ly1, float rx0, float ry0, float rWidth, float rHeight) {
+  int out1, out2;
+  if ((out2 = outcode(lx1, ly1, rx0, ry0, rWidth, rHeight)) == 0) {
+    return true;
+  }
+  while ( (out1 = outcode (lx0, ly0, rx0, ry0, rWidth, rHeight)) != 0) {
+    if ((out1 & out2) != 0) {
+      return false;
+    }
+    if ((out1 & (OUT_LEFT | OUT_RIGHT)) != 0) {
+      float x = rx0;
+      if ((out1 & OUT_RIGHT) != 0) {
+        x += rWidth;
+      }
+      ly0 = ly0 + (x - lx0) * (ly1 - ly0) / (lx1 - lx0);
+      lx0 = x;
+    } else {
+      float y = ry0;
+      if ((out1 & OUT_BOTTOM) != 0) {
+        y += rHeight;
+      }
+      lx0 = lx0 + (y - ly0) * (lx1 - lx0) / (ly1 - ly0);
+      ly0 = y;
+    }
+  }
+  return true;
+}
+
+/*
+ * Used by line - box intersection algorithm
+ */
+int outcode(float pX, float pY, float rectX, float rectY, float rectWidth, float rectHeight) {
+  int out = 0;
+  if (rectWidth <= 0) {
+    out |= OUT_LEFT | OUT_RIGHT;
+  } else if (pX < rectX) {
+    out |= OUT_LEFT;
+  } else if (pX > rectX + rectWidth) {
+    out |= OUT_RIGHT;
+  }
+  if (rectHeight <= 0) {
+    out |= OUT_TOP | OUT_BOTTOM;
+  } else if (pY < rectY) {
+    out |= OUT_TOP;
+  } else if (pY > rectY + rectHeight) {
+    out |= OUT_BOTTOM;
+  }
+  return out;
+}
+
+// Used in line-box intersection test
+final int OUT_LEFT    = 1;
+final int OUT_TOP     = 2;
+final int OUT_RIGHT   = 4;
+final int OUT_BOTTOM  = 8;
+
+class Node
+{ 
+  int startIdx;
+  int endIdx;
+  int nodeID;      //A unique ID for each node
+  int parentID = -1;    //
+  float H = 0.0;
+  float F = 0.0;
+  float G = 0.0;
+  
+  // -----  //Calculate h first - dit is 'n konstante waarde van die node tot by die goal
+  //add strarting node to closed list
+  //add all currenlty linked nodes to open list if not there already
+  //calc g score for all linked nodes in open list, from current node to linked node, use straight line distance for cost
+  //    store g value in connected node - nie hierdie node nie.
+  //    initial g value is straight line distance from current location
+  //Calc f for each node: F = g + H
+  //Pick node with lowest F score, this becomes current node
+  //check all connected nodes to see if their G score is improved by going through current node first. 
+      //If yes, then recalculate that nodes G score
+  //Pick node with lowest F scrore and make it the current node
+  
+  
+  float nodeXPos, nodeYPos;        //x and y location of node;
+  
+  boolean nodeActive = false;    //Active node used for path finding
+  int nodeType = 0;              //0 = DEFAULT, 1 = START, 2 = GOAL
+  
+  ArrayList<Integer> nodeConnectedTo = new ArrayList<Integer>();
+  
+
+  
+  Node(float _nodeXPos, float _nodeYPos)
+  {        
+    nodeType = 0;    //As opposed to START or GOAL
+    nodeActive = false;
+    
+    nodeXPos = _nodeXPos;
+    nodeYPos = _nodeYPos;
+  }
+  
+  Node()
+  {    
+    nodeType = 0;    //As opposed to START or END
+    nodeActive = false;
+  }
+  
+  Node(int _nodeID)
+  {    
+    nodeType = 0;    //As opposed to START or END
+    nodeActive = false;
+    nodeID = _nodeID;
+  }
+  
+  Node(float _nodeXPos, float _nodeYPos, int _nodeType)
+  {    
+    nodeType = _nodeType;    //As opposed to START or GOAL
+    nodeActive = false;
+    
+    nodeXPos = _nodeXPos;
+    nodeYPos = _nodeYPos;
+  }
+  
+  Node(float _nodeXPos, float _nodeYPos, int _nodeType, int _nodeID)
+  {    
+    nodeType = _nodeType;    //As opposed to START or GOAL
+    nodeActive = false;
+    nodeID = _nodeID;
+    
+    nodeXPos = _nodeXPos;
+    nodeYPos = _nodeYPos;
+  }
+  
+//  Node(float _nodeXPos, float _nodeYPos, int _nodeType, int _nodeID)
+//  {    
+//    nodeType = 0;    //As opposed to START or GOAL
+//    nodeActive = false;
+//    nodeID = _nodeID;
+//    
+//    nodeXPos = _nodeXPos;
+//    nodeYPos = _nodeYPos;
+//  }
+  
+  
+  void display()
+  {
+    strokeWeight(allNodesStrokeWeight);
+    stroke(allNodesColor);
+    
+    switch (nodeType)
+    {
+      case 1:
+        strokeWeight(1);
+        fill(0,255,0);
+        stroke(0);
+        ellipse(nodeXPos, nodeYPos, 30,30);
+        break;
+        
+      case 2:
+        strokeWeight(1);
+        fill(255,0,0);
+        stroke(0);
+        ellipse(nodeXPos, nodeYPos, 30,30);
+        break;
+        
+      default:          
+          ellipse(nodeXPos,nodeYPos, 10,10);   //Draws an ellipse to indicate node x,y        
+    }
+
+    textSize(30);    
+    fill(0);
+    textAlign(CENTER,CENTER);
+    text(nodeID,nodeXPos,nodeYPos-20);
+    textSize(15);
+    text(int(H),nodeXPos+20,nodeYPos+20);  //Bottom Right - distance to GOAL    
+    text(int(G),nodeXPos-20, nodeYPos+20);  //Bottom Left - from START with path values added    
+    text(int(H+G),nodeXPos-20, nodeYPos-40);  //Top Left  -  sum of G and H
+  }
+}
+
+
+class Tile
+{
+  int gravity = -1;    //Number of points in tile
+  color gravityCol = color(gravity);
+  //int[] arrayXY = {0,0};
+  //int[] worldXY = {0,0};
+  
+  Tile()
+  {
+    gravityCol = color(150,200,150);
+  }
+  
+  void clearGravity()
+  {
+    gravity = -1;
+    gravityCol = color(150,200,150);
+  }
+  
+  void update()
+  {    
+    switch(gravity)
+    {
+      case -1:
+      {
+        gravityCol = color(150,200,150);
+        break;
+      }
+      case 1:
+      {
+        gravityCol = color(200,150,150);
+        break;
+      }
+    }
   }
 }
