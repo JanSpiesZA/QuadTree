@@ -3,9 +3,9 @@ int GridHeight = 100;
 
 int screenWidth = 640;
 int screenHeight = 640;
-int tileSize = 40;
+int tileSize = 80;
 
-int level = 4;
+int level = 3;
 
 int maxHistogramX = int(screenWidth/tileSize);
 int maxHistogramY = int(screenHeight/tileSize);
@@ -236,10 +236,9 @@ void findPath()
   //Step 1
   //Find the START node ID and add it to the openList
   for (int k = 0; k < allNodes.size(); k++)      //Go through the entire allNodes list and find the START node
-  {
-    
+  {    
     if (allNodes.get(k).nodeType == 1)
-    {
+    {      
       openList.add(k);                
       currentNodeID = allNodes.get(k).nodeID;  
       startNodeID = currentNodeID;
@@ -322,7 +321,7 @@ void findPath()
   //Find the ID of the GOAL node
   for (int k = 0; k < allNodes.size(); k++)
   {
-    if (allNodes.get(k).nodeType == 1)
+    if (allNodes.get(k).nodeType == 2)
     {
       startPathID = allNodes.get(k).nodeID;
       finalPath.add(startPathID);
@@ -371,7 +370,7 @@ void updateWorld()
   
   doQuadTree(0,0,maxHistogramX, maxHistogramY,level);
   println("\nNumber of allNodes: "+allNodes.size());        //Print the total number of nodes    
-  nodeLink();
+  nodeLink();  
   
   findPath();
   
