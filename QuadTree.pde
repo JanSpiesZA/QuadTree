@@ -25,8 +25,6 @@ PVector goalPos = new PVector(screenWidth-tileSize/4, screenHeight-tileSize/2); 
 Tile tile[][] = new Tile[maxHistogramX][maxHistogramY];
 
 //List to hold all the node information. Nodes will be used for path planning after quad tree creation
-
-//ArrayList<Node> openList = new ArrayList<Node>();
 ArrayList<Integer> closedList = new ArrayList<Integer>();
 ArrayList<Node> allNodes = new ArrayList<Node>();
 ArrayList<Integer> openList = new ArrayList<Integer>();
@@ -68,12 +66,8 @@ void doQuadTree(int _topLeftX, int _topLeftY, int _sizeW, int _sizeH, int _level
    float nodeX = (_topLeftX + float(_sizeW)/2)*tileSize;  //cast _sizeW as float in order to do math
    float nodeY = (_topLeftY + float(_sizeH)/2)*tileSize;  //cast _sizeH as float in order to do math   
       
-   allNodes.add(new Node(nodeX,nodeY,allNodes.size()));    //Add new node to allNodes arrayList
-   
-   //ellipse(nodeX,nodeY, 10,10);   //Draws an ellipse to indicate node x,y 
-   //textSize(50);
-   //fill(0);
-   //text(allNodes.size()-1,nodeX-8,nodeY-8);
+   allNodes.add(new Node(nodeX,nodeY, 0, allNodes.size()));    //Add new node to allNodes arrayList
+      
    return;
   }
   //If a mixed quad is found and it is the last level DO NOT draw a node, just return
@@ -144,8 +138,7 @@ void mousePressed()
     tile[int(mouseX/tileSize)][int(mouseY/tileSize)].gravity *= -1;    
     tile[int(mouseX/tileSize)][int(mouseY/tileSize)].update();    
     
-    updateWorld();
-    
+    updateWorld();    
   }
 }
 
@@ -218,7 +211,7 @@ void calcH()
   for (int k = 0; k < allNodes.size(); k++)
   {
     Node n = allNodes.get(k);
-    if (n.nodeType != "GOAL")
+    if (n.nodeType != 2)
     {
       n.H = dist(n.nodeXPos, n.nodeYPos, goalPos.x, goalPos.y);       
     }
@@ -245,7 +238,7 @@ void findPath()
   for (int k = 0; k < allNodes.size(); k++)      //Go through the entire allNodes list and find the START node
   {
     
-    if (allNodes.get(k).nodeType == "START")
+    if (allNodes.get(k).nodeType == 1)
     {
       openList.add(k);                
       currentNodeID = allNodes.get(k).nodeID;  
@@ -329,7 +322,7 @@ void findPath()
   //Find the ID of the GOAL node
   for (int k = 0; k < allNodes.size(); k++)
   {
-    if (allNodes.get(k).nodeType == "GOAL")
+    if (allNodes.get(k).nodeType == 1)
     {
       startPathID = allNodes.get(k).nodeID;
       finalPath.add(startPathID);
@@ -373,8 +366,8 @@ void updateWorld()
       
   allNodes.clear();
           
-  allNodes.add( new Node(startPos.x, startPos.y, "START", allNodes.size()));
-  allNodes.add( new Node(goalPos.x, goalPos.y, "GOAL", allNodes.size()));
+  allNodes.add( new Node(startPos.x, startPos.y, 1, allNodes.size()));
+  allNodes.add( new Node(goalPos.x, goalPos.y, 2, allNodes.size()));
   
   doQuadTree(0,0,maxHistogramX, maxHistogramY,level);
   println("\nNumber of allNodes: "+allNodes.size());        //Print the total number of nodes    
