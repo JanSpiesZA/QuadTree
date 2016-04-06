@@ -3,9 +3,9 @@ int GridHeight = 100;
 
 int screenWidth = 640;
 int screenHeight = 640;
-int tileSize = 160;
+int tileSize = 80;
 
-int level = 2;
+int level = 3;
 
 int maxHistogramX = int(screenWidth/tileSize);
 int maxHistogramY = int(screenHeight/tileSize);
@@ -31,10 +31,7 @@ ArrayList<Integer> openList = new ArrayList<Integer>();
 ArrayList<Integer> finalPath = new ArrayList<Integer>();
 
 void setup()
-{
-  //surface.setResizable(true);
-  //surface.setSize(screenWidth,screenHeight);
-  
+{ 
   size(640,640);
   
   //Sets up a 2D array which will hold the world Tiles
@@ -381,10 +378,6 @@ void updateWorld()
 }
 
 //Code copied from: https://forum.processing.org/one/topic/rect-line-intersection-problem.html
-
-
-
-
 /**
  * Determine whether a line intersects with a box. <br>
  * The box is represented by the top-left and
@@ -571,17 +564,6 @@ class Node
     nodeXPos = _nodeXPos;
     nodeYPos = _nodeYPos;
   }
-  
-//  Node(float _nodeXPos, float _nodeYPos, int _nodeType, int _nodeID)
-//  {    
-//    nodeType = 0;    //As opposed to START or GOAL
-//    nodeActive = false;
-//    nodeID = _nodeID;
-//    
-//    nodeXPos = _nodeXPos;
-//    nodeYPos = _nodeYPos;
-//  }
-  
   
   void display()
   {
